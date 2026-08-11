@@ -65,6 +65,8 @@ def run_shor(N=15, shots=4096, seed=None, base=None):
         a = choose_random_base(N)
     else:
         a=base
+    if not(1<a<N):
+        raise ValueError("Base a must satisfy 1 < a < N.")
     common_factor = gcd(a,N)
 
     if common_factor > 1: #Immediate factor found
@@ -158,8 +160,13 @@ def run_shor(N=15, shots=4096, seed=None, base=None):
         factor_1 = gcd(x-1, N)
         factor_2 = gcd(x+1, N)
 
-    if factor_1 > 1 and factor_2 > 1:
-        factors = (factor_1, factor_2)
+        if (
+            factor_1 > 1 
+            and factor_2 > 1
+            and factor_1 < N
+            and factor_2 < N
+        ):
+            factors = (factor_1, factor_2)
 
 
     # FINAL RESULT
