@@ -11,6 +11,10 @@ from fractions import Fraction
 # MODULAR MULTIPLICATION FUNCTION
 def modular_multiplication_gate(a, N, num_qubits):
     #Reversible modular multiplication gate
+    """
+    Construct a reversible modular multiplication gate implementing
+    |y> -> |a*y mod N> for y < N and leaving unused states unchanged.
+    """
     dimension = 2 ** num_qubits
     matrix = np.zeros((dimension,dimension))
 
@@ -22,9 +26,12 @@ def modular_multiplication_gate(a, N, num_qubits):
         matrix[new_y, y] =1
     return UnitaryGate(matrix, label=f"x{a} mod {N}")
 
-# PERIOD ESTIMATION FUNCTION
+# PERIOD ESTIMATION
 def estimate_period_from_measurement(measured_value, counting_qubits, a, N):
-    #Estimate and verfiy period from a quantum measurement
+    """
+    Estimate and verify the multiplicative period from a measured
+    phase value obtained from the inverse QFT.
+    """
 
     #Zero measurement provides no useful phase info
     if measured_value == 0:
@@ -50,13 +57,24 @@ def estimate_period_from_measurement(measured_value, counting_qubits, a, N):
 
 # RANDOM BASE SELECTION
 def choose_random_base(N):
+    """
+    Randomly select a candidate base a from the range 2 <= a < N.
+    """
     return random.randint(2, N-1)
 
 # MAIN FUNCTION (RUN SHOR ALGORITHM)
 def run_shor(N=15, shots=4096, seed=None, base=None):
-    """ Run the shor period finding demonstration
-        Returns a dictionary (selected base, measurement results, 
-        estimated period and factors)"""
+    """
+    Execute the Shor factorization demonstration.
+
+    The algorithm first checks gcd(a, N) for an immediate factor.
+    If gcd(a, N) = 1, it performs quantum period finding and then
+    applies classical post-processing to recover non-trivial factors.
+
+    Returns:
+        dict: N, selected base, gcd, detected period, factors,
+              measurement counts, and execution branch.
+    """
 
     if seed is not None:
         random.seed(seed)
@@ -80,7 +98,7 @@ def run_shor(N=15, shots=4096, seed=None, base=None):
             "branch": "gcd"
         }
 
-    #CREATE QUANTUM CIRCUIT FOR common_factor>1
+   # CREATE QUANTUM CIRCUIT FOR gcd(a, N) = 1
     counting_qubits = 4
     work_qubits = 4
 
@@ -89,14 +107,14 @@ def run_shor(N=15, shots=4096, seed=None, base=None):
         counting_qubits
     )
 
-    #SUPERPOSITION
+    # SUPERPOSITION
     for qubit in range(counting_qubits):
         qc.h(qubit)
 
-    #INITIALIZE WORK REGISTER TO |1> (ket - column vector)
+    # INITIALIZE WORK REGISTER TO |1>
     qc.x(counting_qubits)
 
-    #CONTROLLED MODULAR EXPONENTIATION
+    # CONTROLLED MODULAR EXPONENTIATION
     for j in range(counting_qubits):
         multiplier = pow(a, 2**j, N)
         gate = modular_multiplication_gate(
@@ -118,16 +136,28 @@ def run_shor(N=15, shots=4096, seed=None, base=None):
         range(counting_qubits)
     )
 
-    # MEASURE COUNTING RESGISTER
+    # MEASURE COUNTING REGISTER
     qc.measure(
         range(counting_qubits),
         range(counting_qubits)
     )
 
-    # AER SIMULATION
+    # SIMULATE WITH QISKIT AER
     simulator = AerSimulator()
     transpiled_qc = transpile(qc, simulator)
-    job = simulator.run(transpiled_qc, shots=shots)
+
+    if seed is not None:
+        job = simulator.run(
+            transpiled_qc, 
+            shots=shots,
+            seed_simulator=seed
+        )
+    else:
+        job = simulator.run(
+            transpiled_qc,
+            shots=shots
+        )
+
     result = job.result()
     counts = result.get_counts()
 
