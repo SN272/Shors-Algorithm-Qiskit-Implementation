@@ -203,14 +203,6 @@ Visualization:
 results/period_distribution.png
 ~~~
 
-### Period vs Base
-
-The relationship between selected base and detected period is visualized in:
-
-~~~text
-results/period_vs_base.png
-~~~
-
 ### Trial-by-Trial Outcomes
 
 The complete sequence of GCD branches, successful quantum outcomes, and quantum failures is visualized in:
@@ -339,7 +331,6 @@ Shors-Algorithm-Qiskit/
 │   ├── measurement_distribution.png
 │   ├── measurement_results.csv
 │   ├── period_distribution.png
-│   ├── period_vs_base.png
 │   └── trial_outcomes.png
 │
 ├── src/
@@ -485,9 +476,12 @@ Possible extensions include:
 
 ## Project Status
 
-**Completed:** Core implementation, controlled demonstrations, 200-trial experimental evaluation, failure analysis, reproducibility testing, and result visualization.
+**Completed:** Core implementation, controlled demonstrations, 200-trial
+experimental evaluation, failure analysis, reproducibility testing, and
+result visualization.
 
-The project is currently being prepared for final technical documentation and academic summer-project reporting.
+The repository contains the finalized implementation, experimental datasets,
+analysis scripts, and generated visualizations for the project.
 
 ## Background
 
